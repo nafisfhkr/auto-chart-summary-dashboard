@@ -1,29 +1,14 @@
+import sys
 from pathlib import Path
-import os
 
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from app.repositories.database import create_database_engine
 
 
-ROOT_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT_DIR / ".env")
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL belum diisi di file .env")
-
-if DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace(
-        "postgresql://",
-        "postgresql+psycopg://",
-        1,
-    )
-
-engine = create_engine(
-    DATABASE_URL,
-    pool_pre_ping=True,
-)
+engine = create_database_engine()
 
 def test_connection():
     print("Testing database connection...")
@@ -32,7 +17,7 @@ def test_connection():
         result = conn.execute(text("SELECT 1"))
         result.scalar_one()
 
-    print("✓ Database connection: SUCCESS")
+    print("[OK] Database connection: SUCCESS")
 
 
 def test_dummy_data():
@@ -47,7 +32,7 @@ def test_dummy_data():
             )
         ).scalar_one()
 
-        print(f"✓ Dummy rows found: {total_rows}")
+        print(f"[OK] Dummy rows found: {total_rows}")
 
         charts = conn.execute(
             text(
@@ -88,7 +73,7 @@ def test_dummy_data():
         f"Expected 5 charts, found {len(charts)}"
     )
 
-    print("\n✓ Dummy data validation: SUCCESS")
+    print("\n[OK] Dummy data validation: SUCCESS")
 
 
 def test_write():
@@ -157,7 +142,7 @@ def test_write():
             },
         )
 
-    print("✓ INSERT / DELETE test: SUCCESS")
+    print("[OK] INSERT / DELETE test: SUCCESS")
 
 
 if __name__ == "__main__":
