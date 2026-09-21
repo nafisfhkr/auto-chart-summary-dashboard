@@ -1,0 +1,43 @@
+# Virtual environment
+.venv/
+venv/
+
+# Environment variables / secrets
+.env
+.env.*
+
+# Keep safe example env
+!.env.example
+
+# Internal / private blueprint
+docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Airflow local files
+airflow.db
+airflow.cfg
+logs/
+
+# Temporary files
+tmp/
+temp/
