@@ -59,6 +59,17 @@ def test_monthly_data_and_fluctuating_min_max():
     assert insight.change_pct == Decimal("13.15")
     assert insight.min_value == Decimal("2.22")
     assert insight.max_value == Decimal("2.84")
+    assert insight.min_period == date(2026, 3, 1)
+    assert insight.max_period == date(2026, 6, 1)
+
+
+def test_repeated_min_and_max_use_earliest_period():
+    insight = calculate(
+        ["5", "2", "5", "2"],
+        periods=["2021-01-01", "2022-01-01", "2023-01-01", "2024-01-01"],
+    )
+    assert insight.min_period == date(2022, 1, 1)
+    assert insight.max_period == date(2021, 1, 1)
 
 
 def test_unsorted_input_is_sorted():
