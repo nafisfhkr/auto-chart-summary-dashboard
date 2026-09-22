@@ -3,7 +3,8 @@
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import Engine, text
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from app.core.models import ChartObservation
 from app.repositories.database import create_database_engine

@@ -6,7 +6,8 @@ from decimal import Decimal
 import hashlib
 import json
 
-from sqlalchemy import Engine, text
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from app.core.models import StructuredInsight
 from app.core.summary_validator import ValidationResult
