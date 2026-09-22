@@ -1,55 +1,29 @@
-import os
+import sys
 from pathlib import Path
 
-import requests
-from dotenv import load_dotenv
-
-
 ROOT_DIR = Path(__file__).resolve().parents[1]
-load_dotenv(ROOT_DIR / ".env")
+sys.path.insert(0, str(ROOT_DIR))
 
-BASE_URL = os.getenv("LLM_BASE_URL")
-API_KEY = os.getenv("LLM_API_KEY")
-MODEL = os.getenv("LLM_MODEL")
-
-if not BASE_URL:
-    raise RuntimeError("LLM_BASE_URL belum diisi")
-
-if not API_KEY:
-    raise RuntimeError("LLM_API_KEY belum diisi")
-
-if not MODEL:
-    raise RuntimeError("LLM_MODEL belum diisi")
+from app.config.settings import get_llm_settings
+from app.providers.factory import create_llm_provider
 
 
-url = f"{BASE_URL}/chat/completions"
+def main() -> None:
+    settings = get_llm_settings()
+    provider = create_llm_provider(settings)
+    response = provider.generate(
+        [
+            {
+                "role": "user",
+                "content": "Jawab singkat: sebutkan ibu kota Jawa Timur.",
+            }
+        ]
+    )
 
-payload = {
-    "model": MODEL,
-    "messages": [
-        {
-            "role": "user",
-            "content": "Jawab singkat: sebutkan ibu kota Jawa Timur.",
-        }
-    ],
-}
+    print("Model:", settings.model)
+    print("Response:")
+    print(response)
 
-headers = {
-    "Authorization": f"Bearer {API_KEY}",
-    "Content-Type": "application/json",
-}
 
-response = requests.post(
-    url,
-    headers=headers,
-    json=payload,
-    timeout=60,
-)
-
-response.raise_for_status()
-
-data = response.json()
-
-print("Model:", MODEL)
-print("Response:")
-print(data["choices"][0]["message"]["content"])
+if __name__ == "__main__":
+    main()
