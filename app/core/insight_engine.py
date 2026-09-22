@@ -23,6 +23,8 @@ class InsightEngine:
         first = ordered[0]
         previous = ordered[-2]
         latest = ordered[-1]
+        min_observation = min(ordered, key=lambda item: (item.value, item.period_start))
+        max_observation = max(ordered, key=lambda item: (item.value, -item.period_start.toordinal()))
         change = latest.value - previous.value
         change_pct = self._percentage_change(previous.value, change)
 
@@ -40,7 +42,9 @@ class InsightEngine:
             change_pct=change_pct,
             trend=("meningkat" if change > 0 else "menurun" if change < 0 else "tetap"),
             min_value=min(item.value for item in ordered),
+            min_period=min_observation.period_start,
             max_value=max(item.value for item in ordered),
+            max_period=max_observation.period_start,
             unit=latest.unit,
             period_range=(
                 f"{first.period_start.isoformat()} to "

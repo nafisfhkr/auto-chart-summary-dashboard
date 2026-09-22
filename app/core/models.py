@@ -42,6 +42,8 @@ class StructuredInsight:
     change_pct: Decimal | None
     trend: str
     min_value: Decimal
+    min_period: date
     max_value: Decimal
+    max_period: date
     unit: str | None
     period_range: str
