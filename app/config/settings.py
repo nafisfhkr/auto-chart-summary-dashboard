@@ -25,6 +25,16 @@ class LLMSettings:
     timeout_seconds: int
 
 
+@dataclass(frozen=True)
+class MetabaseSettings:
+    site_url: str
+    embed_secret_key: str
+    api_key: str
+    username: str
+    password: str
+    timeout_seconds: int
+
+
 def get_llm_settings(env_file: Path | None = None) -> LLMSettings:
     """Load LLM provider settings from the environment and optional .env file."""
     load_dotenv(env_file or ROOT_DIR / ".env")
@@ -54,3 +64,15 @@ def _timeout_seconds() -> int:
     if timeout <= 0:
         raise ConfigurationError("LLM_TIMEOUT_SECONDS harus lebih dari 0")
     return timeout
+
+
+def get_metabase_settings(env_file: Path | None = None) -> MetabaseSettings:
+    load_dotenv(env_file or ROOT_DIR / ".env")
+    return MetabaseSettings(
+        site_url=_required("METABASE_SITE_URL").rstrip("/"),
+        embed_secret_key=os.getenv("METABASE_EMBED_SECRET_KEY", ""),
+        api_key=os.getenv("METABASE_API_KEY", ""),
+        username=os.getenv("METABASE_USERNAME", ""),
+        password=os.getenv("METABASE_PASSWORD", ""),
+        timeout_seconds=_timeout_seconds(),
+    )

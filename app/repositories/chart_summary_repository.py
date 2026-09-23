@@ -47,6 +47,20 @@ class SummarySaveResult:
     inserted: bool
 
 
+@dataclass(frozen=True)
+class GenericSummaryPersistenceInput:
+    dashboard_id: str
+    chart_id: str
+    indicator_name: str
+    summary_text: str
+    validation: ValidationResult
+    provider: str
+    model_name: str
+    prompt_version: str
+    latency_ms: int
+    data_hash: str
+
+
 def canonical_decimal(value: Decimal | None) -> str | None:
     """Serialize a Decimal without float conversion or insignificant zeros."""
     if value is None:
@@ -186,3 +200,46 @@ class ChartSummaryRepository:
             if existing is None:
                 raise RuntimeError("chart_summary insert conflicted but existing row was not found")
             return SummarySaveResult(summary_id=int(existing[0]), inserted=False)
+
+    def save_generic(self, item: GenericSummaryPersistenceInput) -> SummarySaveResult:
+        """Persist non-time-series facts without inventing period values."""
+        if item.latency_ms < 0 or not item.provider.strip() or not item.model_name.strip() or not item.prompt_version.strip():
+            raise ValueError("generic summary metadata is invalid")
+        params = {
+            "dashboard_id": item.dashboard_id, "chart_id": item.chart_id,
+            "indicator_name": item.indicator_name, "summary_text": item.summary_text,
+            "status": "draft" if item.validation.is_valid else "rejected",
+            "provider": item.provider, "model_name": item.model_name,
+            "prompt_version": item.prompt_version,
+            "validation_status": "valid" if item.validation.is_valid else "invalid",
+            "validation_error": None if item.validation.is_valid else json.dumps(list(item.validation.errors), ensure_ascii=False, separators=(",", ":")),
+            "latency_ms": item.latency_ms, "data_hash": item.data_hash,
+        }
+        insert = text("""
+            INSERT INTO chart_summary (
+                dashboard_id, chart_id, indicator_name, period_start, period_end,
+                summary_text, status, provider, model_name, prompt_version,
+                validation_status, validation_error, latency_ms, data_hash
+            ) VALUES (
+                :dashboard_id, :chart_id, :indicator_name, NULL, NULL,
+                :summary_text, :status, :provider, :model_name, :prompt_version,
+                :validation_status, :validation_error, :latency_ms, :data_hash
+            )
+            ON CONFLICT (dashboard_id, chart_id, data_hash, provider, model_name, prompt_version, validation_status)
+            DO NOTHING RETURNING id
+        """)
+        lookup = text("""
+            SELECT id FROM chart_summary
+            WHERE dashboard_id = :dashboard_id AND chart_id = :chart_id
+              AND data_hash = :data_hash AND provider = :provider
+              AND model_name = :model_name AND prompt_version = :prompt_version
+              AND validation_status = :validation_status
+        """)
+        with self.engine.begin() as connection:
+            row = connection.execute(insert, params).first()
+            if row is not None:
+                return SummarySaveResult(int(row[0]), True)
+            existing = connection.execute(lookup, params).first()
+            if existing is None:
+                raise RuntimeError("chart_summary insert conflicted but existing row was not found")
+            return SummarySaveResult(int(existing[0]), False)
