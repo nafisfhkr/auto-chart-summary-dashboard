@@ -3,3 +3,6 @@ psycopg[binary]
 python-dotenv
 pytest
 requests
+fastapi
+uvicorn
+httpx

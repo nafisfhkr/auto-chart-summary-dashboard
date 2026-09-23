@@ -16,6 +16,20 @@ from app.repositories.database import create_database_engine
 
 
 @dataclass(frozen=True)
+class StoredSummary:
+    summary_id: int
+    summary_text: str
+    status: str | None
+    validation_status: str | None
+    provider: str | None
+    model_name: str | None
+    prompt_version: str | None
+    latency_ms: int | None
+    data_hash: str | None
+    generated_at: object
+
+
+@dataclass(frozen=True)
 class SummaryPersistenceInput:
     insight: StructuredInsight
     summary_text: str
@@ -82,6 +96,31 @@ class ChartSummaryRepository:
 
     def __init__(self, engine: Engine | None = None) -> None:
         self.engine = engine or create_database_engine()
+
+    def get_latest_valid_summary(self, dashboard_id: str, chart_id: str) -> StoredSummary | None:
+        query = text("""
+            SELECT id, summary_text, status, validation_status, provider, model_name,
+                   prompt_version, latency_ms, data_hash, generated_at
+            FROM chart_summary
+            WHERE dashboard_id = :dashboard_id
+              AND chart_id = :chart_id
+              AND validation_status = 'valid'
+            ORDER BY generated_at DESC, id DESC
+            LIMIT 1
+        """)
+        with self.engine.connect() as connection:
+            row = connection.execute(query, {
+                "dashboard_id": dashboard_id, "chart_id": chart_id,
+            }).mappings().first()
+        if row is None:
+            return None
+        return StoredSummary(
+            summary_id=int(row["id"]), summary_text=row["summary_text"] or "",
+            status=row["status"], validation_status=row["validation_status"],
+            provider=row["provider"], model_name=row["model_name"],
+            prompt_version=row["prompt_version"], latency_ms=row["latency_ms"],
+            data_hash=row["data_hash"], generated_at=row["generated_at"],
+        )
 
     def save(self, item: SummaryPersistenceInput) -> SummarySaveResult:
         if item.latency_ms < 0:
