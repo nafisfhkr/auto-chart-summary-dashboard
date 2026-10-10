@@ -8,6 +8,8 @@ from app.config.metabase_charts import METABASE_CHARTS
 from app.core.categorical_insight_engine import calculate_categorical_insight
 from app.core.composition_insight_engine import calculate_composition_insight
 from app.core.metabase_summary_validator import MetabaseSummaryValidator
+from app.prompts.metabase_categorical_summary import PROMPT_VERSION as CATEGORICAL_PROMPT_VERSION, build_messages as build_categorical_messages
+from app.prompts.metabase_composition_summary import PROMPT_VERSION as COMPOSITION_PROMPT_VERSION, build_messages as build_composition_messages
 from app.repositories.metabase_question_repository import MetabaseQuestionRepository, MetabaseQuestionResult, MetabaseRepositoryError
 from app.repositories.chart_summary_repository import StoredSummary
 from app.api.main import app
@@ -94,6 +96,38 @@ def test_metabase_hash_changes_with_insight_data_only():
     first = calculate_composition_insight(config, MetabaseQuestionResult(695, ("kelompok_fiskal", "total_nilai"), ({"kelompok_fiskal": "Pendapatan", "total_nilai": "526"}, {"kelompok_fiskal": "Pengeluaran", "total_nilai": "474"})))
     second = calculate_composition_insight(config, MetabaseQuestionResult(695, ("kelompok_fiskal", "total_nilai"), ({"kelompok_fiskal": "Pendapatan", "total_nilai": "527"}, {"kelompok_fiskal": "Pengeluaran", "total_nilai": "473"})))
     assert build_metabase_data_hash(config, first) != build_metabase_data_hash(config, second)
+
+
+def test_categorical_prompt_has_editorial_data_style():
+    insight = calculate_categorical_insight(
+        METABASE_CHARTS[0],
+        result([
+            {"kabupaten/kota": "A", "kategori": "Penerimaan", "sum of jumlah": "100"},
+            {"kabupaten/kota": "A", "kategori": "Pengeluaran", "sum of jumlah": "70"},
+        ], ["Kabupaten/kota", "Kategori", "Sum of Jumlah"]),
+    )
+    system = build_categorical_messages(insight)[0]["content"]
+    assert CATEGORICAL_PROMPT_VERSION == "metabase-categorical-v2"
+    assert "jurnalisme data Indonesia" in system
+    assert "temuan paling penting" in system
+    assert "perbandingan Pendapatan dengan Pengeluaran" in system
+    assert "tanpa markdown" in system
+
+
+def test_composition_prompt_has_editorial_data_style():
+    insight = calculate_composition_insight(
+        METABASE_CHARTS[1],
+        MetabaseQuestionResult(
+            695, ("kelompok_fiskal", "total_nilai"),
+            ({"kelompok_fiskal": "Pendapatan", "total_nilai": "526"}, {"kelompok_fiskal": "Pengeluaran", "total_nilai": "474"}),
+        ),
+    )
+    system = build_composition_messages(insight)[0]["content"]
+    assert COMPOSITION_PROMPT_VERSION == "metabase-composition-v2"
+    assert "jurnalisme data Indonesia" in system
+    assert "kategori dominan" in system
+    assert "nilai nominal, pangsa persen" in system
+    assert "selisih poin persentase" in system
 
 
 def test_metabase_dashboard_endpoint_serializes_latest_valid_summary(monkeypatch):

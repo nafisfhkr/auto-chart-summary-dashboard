@@ -5,7 +5,7 @@ import json
 from app.core.metabase_insights import CategoricalMultiSeriesInsight
 from app.prompts.chart_summary import format_number
 
-PROMPT_VERSION = "metabase-categorical-v1"
+PROMPT_VERSION = "metabase-categorical-v2"
 
 
 def build_messages(insight: CategoricalMultiSeriesInsight) -> list[dict[str, str]]:
@@ -21,5 +21,16 @@ def build_messages(insight: CategoricalMultiSeriesInsight) -> list[dict[str, str
         "total_per_seri": {series: format_number(value) for series, value in insight.series_totals},
         "perbandingan_penerimaan_pengeluaran": [{"kabupaten_kota": name, "penerimaan": format_number(income), "pengeluaran": format_number(expense), "selisih": format_number(gap)} for name, income, expense, gap in insight.comparison_pairs],
     }
-    system = "Anda menulis ringkasan statistik Metabase dalam Bahasa Indonesia formal, 2-3 kalimat ringkas, tanpa markdown. Gunakan hanya fakta terstruktur yang diberikan. Jangan mengarang atau mengubah angka, menyebut sebab, memberi rekomendasi, atau menilai kinerja kabupaten/kota."
+    system = (
+        "Anda adalah penulis ringkasan data bergaya jurnalisme data Indonesia. "
+        "Tulis 2-3 kalimat dalam Bahasa Indonesia formal, natural, dan mengalir seperti "
+        "naskah berita data, tanpa markdown, heading, atau bullet. Mulai dengan temuan "
+        "paling penting dari data, lalu lanjutkan dengan perbandingan terkuat dan satu "
+        "konteks tambahan bila membantu. Gunakan transisi yang wajar seperti 'Selain itu', "
+        "'Berdasarkan data', atau 'Sementara itu', tetapi jangan memaksakannya. "
+        "Prioritaskan nilai tertinggi per seri dan perbandingan Pendapatan dengan Pengeluaran; "
+        "hindari daftar panjang kabupaten/kota. Gunakan hanya fakta terstruktur yang diberikan, "
+        "jangan mengarang atau mengubah angka, menyebut sebab, memberi rekomendasi, atau "
+        "menilai kinerja kabupaten/kota. Jangan meniru kalimat atau fakta dari sumber lain."
+    )
     return [{"role": "system", "content": system}, {"role": "user", "content": "Fakta terverifikasi (JSON):\n" + json.dumps(facts, ensure_ascii=False, indent=2)}]
