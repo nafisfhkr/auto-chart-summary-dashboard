@@ -27,6 +27,14 @@ class StoredSummary:
     latency_ms: int | None
     data_hash: str | None
     generated_at: object
+    # --- v2 fields ---
+    persona: str | None = None
+    question_id: int | None = None
+    factual_payload: dict | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    estimated_cost: float | None = None
+    analyst_notes: str | None = None
 
 
 @dataclass(frozen=True)
@@ -39,6 +47,7 @@ class SummaryPersistenceInput:
     prompt_version: str = PROMPT_VERSION
     latency_ms: int = 0
     indicator_code: str | None = None
+    persona: str = "katadata"
 
 
 @dataclass(frozen=True)
@@ -59,6 +68,14 @@ class GenericSummaryPersistenceInput:
     prompt_version: str
     latency_ms: int
     data_hash: str
+    # --- v2 fields ---
+    persona: str = "katadata"
+    question_id: int | None = None
+    strategy_track: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    estimated_cost: float | None = None
+    factual_payload: dict | None = None
 
 
 def canonical_decimal(value: Decimal | None) -> str | None:
@@ -111,13 +128,16 @@ class ChartSummaryRepository:
     def __init__(self, engine: Engine | None = None) -> None:
         self.engine = engine or create_database_engine()
 
-    def get_latest_valid_summary(self, dashboard_id: str, chart_id: str) -> StoredSummary | None:
+    def get_latest_valid_summary(self, dashboard_id: str, chart_id: str, persona: str = "katadata") -> StoredSummary | None:
         query = text("""
             SELECT id, summary_text, status, validation_status, provider, model_name,
-                   prompt_version, latency_ms, data_hash, generated_at
+                   prompt_version, latency_ms, data_hash, generated_at,
+                   persona, question_id, factual_payload, input_tokens,
+                   output_tokens, estimated_cost, analyst_notes
             FROM chart_summary
             WHERE dashboard_id = :dashboard_id
               AND chart_id = :chart_id
+              AND persona = :persona
               AND validation_status = 'valid'
             ORDER BY generated_at DESC, id DESC
             LIMIT 1
@@ -125,6 +145,7 @@ class ChartSummaryRepository:
         with self.engine.connect() as connection:
             row = connection.execute(query, {
                 "dashboard_id": dashboard_id, "chart_id": chart_id,
+                "persona": persona,
             }).mappings().first()
         if row is None:
             return None
@@ -134,6 +155,11 @@ class ChartSummaryRepository:
             provider=row["provider"], model_name=row["model_name"],
             prompt_version=row["prompt_version"], latency_ms=row["latency_ms"],
             data_hash=row["data_hash"], generated_at=row["generated_at"],
+            persona=row["persona"], question_id=row["question_id"],
+            factual_payload=row["factual_payload"],
+            input_tokens=row["input_tokens"], output_tokens=row["output_tokens"],
+            estimated_cost=float(row["estimated_cost"]) if row["estimated_cost"] else None,
+            analyst_notes=row["analyst_notes"],
         )
 
     def save(self, item: SummaryPersistenceInput) -> SummarySaveResult:
@@ -166,21 +192,22 @@ class ChartSummaryRepository:
             ),
             "latency_ms": item.latency_ms,
             "data_hash": data_hash,
+            "persona": item.persona,
         }
         insert = text("""
             INSERT INTO chart_summary (
                 dashboard_id, chart_id, indicator_code, indicator_name,
                 period_start, period_end, summary_text, status, provider,
                 model_name, prompt_version, validation_status, validation_error,
-                latency_ms, data_hash
+                latency_ms, data_hash, persona
             ) VALUES (
                 :dashboard_id, :chart_id, :indicator_code, :indicator_name,
                 :period_start, :period_end, :summary_text, :status, :provider,
                 :model_name, :prompt_version, :validation_status, :validation_error,
-                :latency_ms, :data_hash
+                :latency_ms, :data_hash, :persona
             )
             ON CONFLICT (
-                dashboard_id, chart_id, data_hash, provider, model_name,
+                dashboard_id, chart_id, persona, data_hash, provider, model_name,
                 prompt_version, validation_status
             ) DO NOTHING
             RETURNING id
@@ -188,6 +215,7 @@ class ChartSummaryRepository:
         lookup = text("""
             SELECT id FROM chart_summary
             WHERE dashboard_id = :dashboard_id AND chart_id = :chart_id
+              AND persona = :persona
               AND data_hash = :data_hash AND provider = :provider
               AND model_name = :model_name AND prompt_version = :prompt_version
               AND validation_status = :validation_status
@@ -214,25 +242,37 @@ class ChartSummaryRepository:
             "validation_status": "valid" if item.validation.is_valid else "invalid",
             "validation_error": None if item.validation.is_valid else json.dumps(list(item.validation.errors), ensure_ascii=False, separators=(",", ":")),
             "latency_ms": item.latency_ms, "data_hash": item.data_hash,
+            "persona": item.persona,
+            "question_id": item.question_id,
+            "strategy_track": item.strategy_track,
+            "input_tokens": item.input_tokens,
+            "output_tokens": item.output_tokens,
+            "estimated_cost": item.estimated_cost,
+            "factual_payload": json.dumps(item.factual_payload, ensure_ascii=False, separators=(",", ":")) if item.factual_payload else None,
         }
         insert = text("""
             INSERT INTO chart_summary (
                 dashboard_id, chart_id, indicator_name, period_start, period_end,
                 summary_text, status, provider, model_name, prompt_version,
-                validation_status, validation_error, latency_ms, data_hash
+                validation_status, validation_error, latency_ms, data_hash,
+                persona, question_id, strategy_track, input_tokens,
+                output_tokens, estimated_cost, factual_payload
             ) VALUES (
                 :dashboard_id, :chart_id, :indicator_name, NULL, NULL,
                 :summary_text, :status, :provider, :model_name, :prompt_version,
-                :validation_status, :validation_error, :latency_ms, :data_hash
+                :validation_status, :validation_error, :latency_ms, :data_hash,
+                :persona, :question_id, :strategy_track, :input_tokens,
+                :output_tokens, :estimated_cost, :factual_payload
             )
-            ON CONFLICT (dashboard_id, chart_id, data_hash, provider, model_name, prompt_version, validation_status)
+            ON CONFLICT (dashboard_id, chart_id, persona, data_hash, provider, model_name, prompt_version, validation_status)
             DO NOTHING RETURNING id
         """)
         lookup = text("""
             SELECT id FROM chart_summary
             WHERE dashboard_id = :dashboard_id AND chart_id = :chart_id
-              AND data_hash = :data_hash AND provider = :provider
-              AND model_name = :model_name AND prompt_version = :prompt_version
+              AND persona = :persona AND data_hash = :data_hash
+              AND provider = :provider AND model_name = :model_name
+              AND prompt_version = :prompt_version
               AND validation_status = :validation_status
         """)
         with self.engine.begin() as connection:
