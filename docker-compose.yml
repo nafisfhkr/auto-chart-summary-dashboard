@@ -1,4 +1,22 @@
 services:
+  metabase-db:
+    image: postgres:16-alpine
+    container_name: metabase-db
+    environment:
+      POSTGRES_USER: metabase
+      POSTGRES_PASSWORD: metabase
+      POSTGRES_DB: jatim_data
+    ports:
+      - "5433:5432"
+    volumes:
+      - metabase_db_data:/var/lib/postgresql/data
+      - ./docker/metabase-db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metabase -d jatim_data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   airflow-postgres:
     image: postgres:16-alpine
     environment:
@@ -101,3 +119,4 @@ services:
 volumes:
   airflow_postgres_data:
   airflow_logs:
+  metabase_db_data:
