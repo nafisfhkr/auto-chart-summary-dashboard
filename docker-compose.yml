@@ -17,6 +17,20 @@ services:
       timeout: 5s
       retries: 5
 
+  metabase-local:
+    image: metabase/metabase:latest
+    container_name: metabase-local
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: h2
+      MB_JETTY_PORT: 3000
+    volumes:
+      - metabase_app_data:/metabase-data
+    depends_on:
+      metabase-db:
+        condition: service_healthy
+
   airflow-postgres:
     image: postgres:16-alpine
     environment:
@@ -120,3 +134,4 @@ volumes:
   airflow_postgres_data:
   airflow_logs:
   metabase_db_data:
+  metabase_app_data:
