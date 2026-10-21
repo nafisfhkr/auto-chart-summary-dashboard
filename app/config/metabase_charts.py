@@ -23,7 +23,7 @@ METABASE_CHARTS = (
         question_id=694,
         title="Distribusi Pendapatan dan Pengeluaran Kabupaten di Jawa Timur",
         insight_type="categorical_multi_series",
-        dimension_column="Kabupatenkota",
+        dimension_column="Kabupaten/kota",
         series_column="Kategori",
         value_column="Sum of Jumlah",
     ),

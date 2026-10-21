@@ -7,8 +7,8 @@ import pytest
 from app.core.models import StructuredInsight
 from app.core.summary_validator import ValidationResult
 from app.repositories.chart_summary_repository import (
-    ChartSummaryRepository, SummaryPersistenceInput, SummarySaveResult,
-    build_data_hash, canonical_decimal,
+    ChartSummaryRepository, GenericSummaryPersistenceInput, SummaryPersistenceInput,
+    SummarySaveResult, build_data_hash, canonical_decimal,
 )
 
 
@@ -44,6 +44,30 @@ class FakeBegin:
 class FakeEngine:
     def __init__(self, rows): self.connection = FakeConnection(rows)
     def begin(self): return FakeBegin(self.connection)
+
+
+class FakeMappings:
+    def __init__(self, row): self.row = row
+    def first(self): return self.row
+
+
+class FakeReadResult:
+    def __init__(self, row): self.row = row
+    def mappings(self): return FakeMappings(self.row)
+
+
+class FakeReadConnection:
+    def __init__(self, rows): self.rows, self.calls = iter(rows), []
+    def execute(self, statement, parameters):
+        self.calls.append((str(statement), parameters))
+        return FakeReadResult(next(self.rows))
+    def __enter__(self): return self
+    def __exit__(self, *args): return False
+
+
+class FakeReadEngine:
+    def __init__(self, rows): self.connection = FakeReadConnection(rows)
+    def connect(self): return self.connection
 
 
 def item(validation, **changes):
@@ -117,3 +141,50 @@ def test_negative_latency_is_rejected():
     invalid = SummaryPersistenceInput(**{**original.__dict__, "latency_ms": -1})
     with pytest.raises(ValueError, match="latency_ms"):
         ChartSummaryRepository(FakeEngine([])).save(invalid)
+
+
+def test_save_includes_persona_in_conflict_target():
+    engine = FakeEngine([(7,)])
+    ChartSummaryRepository(engine).save(item(ValidationResult(True, ())))
+    sql, params = engine.connection.calls[0]
+    assert params["persona"] == "katadata"
+    assert "persona" in sql.split("ON CONFLICT", 1)[1]
+
+
+def test_save_generic_maps_v2_fields():
+    engine = FakeEngine([(9,)])
+    generic = GenericSummaryPersistenceInput(
+        "metabase_pilot", "metabase_question_694", "Distribusi", "Ringkasan.",
+        ValidationResult(True, ()), "9router", "model", "v1", 100, "hash",
+        persona="politik", question_id=694, strategy_track="A",
+        input_tokens=120, output_tokens=30, estimated_cost=0.00125,
+        factual_payload={"total": "100"},
+    )
+    result = ChartSummaryRepository(engine).save_generic(generic)
+    sql, params = engine.connection.calls[0]
+    assert result == SummarySaveResult(summary_id=9, inserted=True)
+    assert params["persona"] == "politik" and params["question_id"] == 694
+    assert params["strategy_track"] == "A"
+    assert params["input_tokens"] == 120 and params["output_tokens"] == 30
+    assert params["estimated_cost"] == 0.00125
+    assert json.loads(params["factual_payload"]) == {"total": "100"}
+    assert "persona" in sql.split("ON CONFLICT", 1)[1]
+
+
+def test_get_latest_valid_summary_returns_v2_fields():
+    row = dict(
+        id=12, summary_text="Ringkasan.", status="draft", validation_status="valid",
+        provider="9router", model_name="model", prompt_version="v1", latency_ms=10,
+        data_hash="abc", generated_at="2026-01-01T00:00:00Z", persona="katadata",
+        question_id=694, factual_payload={"total": "100"}, input_tokens=120,
+        output_tokens=30, estimated_cost=Decimal("0.000125"), analyst_notes=None,
+    )
+    engine = FakeReadEngine([row])
+    summary = ChartSummaryRepository(engine).get_latest_valid_summary("d", "c")
+    assert summary.persona == "katadata" and summary.question_id == 694
+    assert summary.factual_payload == {"total": "100"}
+    assert summary.input_tokens == 120 and summary.output_tokens == 30
+    assert summary.estimated_cost == 0.000125
+    sql, params = engine.connection.calls[0]
+    assert params["persona"] == "katadata"
+    assert "persona = :persona" in sql
