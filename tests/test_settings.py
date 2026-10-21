@@ -66,6 +66,43 @@ def test_valid_configuration_is_loaded_and_normalized(monkeypatch, tmp_path):
     )
 
 
+def test_ollama_settings_does_not_require_api_key(monkeypatch, tmp_path):
+    clean_environment(monkeypatch)
+    monkeypatch.setenv("LLM_PROVIDER", "ollama")
+    monkeypatch.setenv("LLM_MODEL", "llama3")
+
+    settings = get_llm_settings(tmp_path / "empty.env")
+
+    assert settings.provider == "ollama"
+    assert settings.base_url == "http://localhost:11434/v1"
+    assert settings.model == "llama3"
+    assert settings.api_key == "ollama"
+    assert settings.timeout_seconds == 60
+
+
+def test_groq_settings_uses_default_base_url(monkeypatch, tmp_path):
+    clean_environment(monkeypatch)
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    monkeypatch.setenv("LLM_API_KEY", "gsk_test_key")
+    monkeypatch.setenv("LLM_MODEL", "llama-3.1-70b-versatile")
+
+    settings = get_llm_settings(tmp_path / "empty.env")
+
+    assert settings.provider == "groq"
+    assert settings.base_url == "https://api.groq.com/openai/v1"
+    assert settings.api_key == "gsk_test_key"
+    assert settings.model == "llama-3.1-70b-versatile"
+
+
+def test_groq_missing_api_key_raises_error(monkeypatch, tmp_path):
+    clean_environment(monkeypatch)
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    monkeypatch.setenv("LLM_MODEL", "llama-3.1-70b-versatile")
+
+    with pytest.raises(ConfigurationError, match="LLM_API_KEY"):
+        get_llm_settings(tmp_path / "empty.env")
+
+
 def test_timeout_defaults_to_60(monkeypatch, tmp_path):
     clean_environment(monkeypatch)
     monkeypatch.setenv("LLM_PROVIDER", "9router")
