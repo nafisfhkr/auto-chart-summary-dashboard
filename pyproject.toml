@@ -1,0 +1,22 @@
+[project]
+name = "auto-chart-summary-dashboard"
+version = "0.2.0"
+description = "Platform Analitik Indikator Strategis dengan AI Summary Multi-Persona"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlalchemy",
+    "psycopg[binary]",
+    "python-dotenv",
+    "requests",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "PyJWT",
+    "pytest",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+]
