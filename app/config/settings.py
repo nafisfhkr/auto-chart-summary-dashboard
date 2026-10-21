@@ -39,12 +39,29 @@ def get_llm_settings(env_file: Path | None = None) -> LLMSettings:
     """Load LLM provider settings from the environment and optional .env file."""
     load_dotenv(env_file or ROOT_DIR / ".env")
 
+    provider = _required("LLM_PROVIDER").strip().lower()
+    model = _required("LLM_MODEL")
+    timeout = _timeout_seconds()
+
+    if provider == "ollama":
+        base_url = os.getenv("LLM_BASE_URL", "http://localhost:11434/v1").rstrip("/")
+        api_key = os.getenv("LLM_API_KEY") or "ollama"
+    elif provider == "groq":
+        base_url = os.getenv(
+            "LLM_BASE_URL", "https://api.groq.com/openai/v1"
+        ).rstrip("/")
+        api_key = _required("LLM_API_KEY")
+    else:
+        # Default untuk 9router dan provider OpenAI-compatible generik
+        base_url = _required("LLM_BASE_URL").rstrip("/")
+        api_key = _required("LLM_API_KEY")
+
     return LLMSettings(
-        provider=_required("LLM_PROVIDER"),
-        base_url=_required("LLM_BASE_URL").rstrip("/"),
-        api_key=_required("LLM_API_KEY"),
-        model=_required("LLM_MODEL"),
-        timeout_seconds=_timeout_seconds(),
+        provider=provider,
+        base_url=base_url,
+        api_key=api_key,
+        model=model,
+        timeout_seconds=timeout,
     )
 
 

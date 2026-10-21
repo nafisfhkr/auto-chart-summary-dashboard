@@ -4,7 +4,9 @@ import pytest
 from app.config.settings import ConfigurationError, LLMSettings
 from app.providers.base import LLMProviderError
 from app.providers.factory import create_llm_provider
+from app.providers.groq import GroqProvider
 from app.providers.nine_router import NineRouterProvider
+from app.providers.ollama import OllamaProvider
 
 
 class FakeResponse:
@@ -147,3 +149,29 @@ def test_unsupported_provider_factory():
 
     with pytest.raises(ConfigurationError, match="tidak didukung"):
         create_llm_provider(settings)
+
+
+def test_factory_creates_ollama_provider():
+    settings = LLMSettings(
+        provider="ollama",
+        base_url="http://localhost:11434/v1",
+        api_key="ollama",
+        model="llama3",
+        timeout_seconds=60,
+    )
+    provider_instance = create_llm_provider(settings)
+    assert isinstance(provider_instance, OllamaProvider)
+    assert provider_instance.model == "llama3"
+
+
+def test_factory_creates_groq_provider():
+    settings = LLMSettings(
+        provider="groq",
+        base_url="https://api.groq.com/openai/v1",
+        api_key="gsk_dummy",
+        model="llama-3.1-70b-versatile",
+        timeout_seconds=45,
+    )
+    provider_instance = create_llm_provider(settings)
+    assert isinstance(provider_instance, GroqProvider)
+    assert provider_instance.model == "llama-3.1-70b-versatile"
