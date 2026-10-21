@@ -1,6 +1,6 @@
-# Jawa Timur Public Strategic Dashboard & AI Narrative Summary (v2)
+# Auto Chart Summary Generation
 
-> **Platform Analitik Indikator Strategis Jawa Timur dengan Integrasi Metabase dan Generator Ringkasan Naratif Berbasis AI Multi-Persona yang Terverifikasi Secara Deterministik.**
+> **Platform Analitik Indikator Strategis dengan Integrasi Metabase dan Generator Ringkasan Naratif Berbasis AI Multi-Persona yang Terverifikasi Secara Deterministik.**
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
@@ -11,9 +11,9 @@
 
 ---
 
-## 📌 Ringkasan Proyek
+## Ringkasan Proyek
 
-Proyek ini bertujuan memecahkan masalah umum pada dashboard publik: *data grafik statistik sering kali sulit dipahami oleh masyarakat umum, media, maupun pimpinan daerah tanpa interpretasi naratif yang lugas*.
+Proyek ini bertujuan memecahkan masalah umum pada dashboard publik: *data grafik statistik sering kali sulit dipahami oleh masyarakat umum, media, maupun pimpinan tanpa interpretasi naratif yang lugas*.
 
 Sistem ini menghubungkan visualisasi data dari **Metabase** dengan generator ringkasan berbasis **LLM (Large Language Model)** menggunakan pendekatan **Deterministic Engine First**:
 1. Angka dan tren dihitung secara matematis menggunakan **Insight Engine**.
@@ -22,12 +22,12 @@ Sistem ini menghubungkan visualisasi data dari **Metabase** dengan generator rin
 
 ---
 
-## 🏗️ Arsitektur Sistem
+## Arsitektur Sistem
 
 ```mermaid
 flowchart TD
     subgraph Data Layer
-        M_DB[(PostgreSQL Jatim Data)] --> MB[Metabase Local / Cloud]
+        M_DB[(PostgreSQL Sample Data)] --> MB[Metabase Local / Cloud]
     end
 
     subgraph Core Pipeline
@@ -49,20 +49,20 @@ flowchart TD
 
 ---
 
-## ✨ Fitur Utama (v2)
+## Fitur Utama (v2)
 
-- 🔒 **Zero Hallucination Fact-Checking**: Validasi angka berbasis aturan deterministik menjamin tidak ada fakta palsu atau angka karangan pada narasi publik.
-- 🔄 **Swappable LLM Providers**: Dapat dengan mudah beralih antara:
+- **Zero Hallucination Fact-Checking**: Validasi angka berbasis aturan deterministik menjamin tidak ada fakta palsu atau angka karangan pada narasi publik.
+- **Swappable LLM Providers**: Dapat dengan mudah beralih antara:
   - **Ollama** (Jalur A - Local Private LLM, e.g., Llama 3)
   - **Groq** (Jalur B1 - Ultra-Fast Cloud Inference API)
   - **9Router / OpenAI-Compatible** (Jalur B2 - Multi-model gateway)
-- 📊 **Dynamic Question Registry**: Tidak ada lagi hardcode ID chart. Seluruh mapping visualisasi Metabase dikelola secara dinamis melalui tabel `question_registry`.
-- 🐳 **Full Dockerized Environment**: Dilengkapi service container `metabase-local` dan PostgreSQL `metabase-db` dengan dataset contoh indikator strategis Jawa Timur (Inflasi, PAD, PDRB, Kemiskinan).
-- 👥 **Multi-Persona Narrative Ready**: Skema basis data v2 mendukung persona audiens spesifik (Gaya KataData, Ringkasan Singkat Eksekutif, dan Analisis Lengkap).
+- **Dynamic Question Registry**: Tidak ada lagi hardcode ID chart. Seluruh mapping visualisasi Metabase dikelola secara dinamis melalui tabel `question_registry`.
+- **Full Dockerized Environment**: Dilengkapi service container `metabase-local` dan PostgreSQL `metabase-db` dengan dataset contoh indikator strategis (Inflasi, Realisasi Anggaran, Komposisi Sektoral, Kemiskinan).
+- **Multi-Persona Narrative Ready**: Skema basis data v2 mendukung persona audiens spesifik (Gaya KataData, Ringkasan Singkat Eksekutif, dan Analisis Lengkap).
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Komponen | Teknologi | Keterangan |
 | :--- | :--- | :--- |
@@ -76,7 +76,7 @@ flowchart TD
 
 ---
 
-## 🚀 Panduan Memulai Cepat (Quickstart)
+## Panduan Memulai Cepat (Quickstart)
 
 ### 1. Prasyarat Sistem
 - Python 3.11 atau lebih baru
@@ -87,7 +87,7 @@ flowchart TD
 
 Pilih salah satu cara setup environment di bawah ini:
 
-#### ⚡ Opsi A: Menggunakan `uv` (Direkomendasikan - Modern & Cepat)
+#### Opsi A: Menggunakan `uv` (Direkomendasikan)
 Jika Anda menggunakan [uv](https://docs.astral.sh/uv/):
 ```bash
 # Clone repository
@@ -102,7 +102,7 @@ uv sync
 # Linux / macOS:        source .venv/bin/activate
 ```
 
-#### 🐍 Opsi B: Menggunakan Standar Python (`pip` bawaan)
+#### Opsi B: Menggunakan Standar Python (`pip` bawaan)
 Jika belum menginstal `uv`, Anda tetap dapat menggunakan tools bawaan Python:
 ```bash
 # Clone repository
@@ -121,7 +121,6 @@ source .venv/bin/activate
 # 3. Install dependencies
 pip install -r requirements.txt
 ```
-
 
 ### 3. Konfigurasi Environment (`.env`)
 Salin file template `.env.example` menjadi `.env`:
@@ -148,7 +147,7 @@ Pastikan Docker Engine / Docker Desktop sudah berjalan, lalu jalankan:
 docker compose up -d metabase-db metabase-local
 ```
 - **Metabase UI**: Akses melalui browser di [http://localhost:3000](http://localhost:3000)
-- **Database Sample Jatim**: Berjalan di `localhost:5433` (User: `metabase`, Password: `metabase`, DB: `jatim_data`)
+- **Database Sample Data**: Berjalan di `localhost:5433` (User: `metabase`, Password: `metabase`, DB: `jatim_data`)
 
 ### 5. Inisialisasi Skema Database v2
 Jalankan file migrasi SQL ke database PostgreSQL Anda secara berurutan:
@@ -164,18 +163,22 @@ Jalankan file migrasi SQL ke database PostgreSQL Anda secara berurutan:
 Pastikan semua modul berjalan dengan baik tanpa error:
 ```bash
 pytest -v
+# atau via uv:
+uv run pytest -v
 ```
 Seluruh 140+ test case harus berstatus **passed**.
 
 ### 7. Menjalankan Server API Lokal
 ```bash
 uvicorn app.api.main:app --reload --port 8000
+# atau via uv:
+uv run uvicorn app.api.main:app --reload --port 8000
 ```
 Buka dokumentasi interaktif Swagger API di [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ---
 
-## 📁 Struktur Direktori
+## Struktur Direktori
 
 ```text
 auto-chart-summary-dashboard/
@@ -196,16 +199,17 @@ auto-chart-summary-dashboard/
 ├── sql/                 # Skrip DDL & migrasi database (001 s/d 005)
 ├── tests/               # Test suite pytest komprehensif
 ├── docker-compose.yml   # Orkestrasi container Metabase, Postgres, & Airflow
-├── requirements.txt     # Daftar pustaka Python
+├── pyproject.toml       # Definisi proyek & dependencies standar PEP 621 (uv sync)
+├── requirements.txt     # Daftar pustaka Python untuk pip biasa
 └── README.md
 ```
 
 ---
 
-## 🗺️ Roadmap Proyek (v2)
+## Roadmap Proyek (v2)
 
 - [x] **Sprint 1 (Fondasi Data & Engine)**:
-  - Dockerized Metabase lokal + dataset sample Jatim.
+  - Dockerized Metabase lokal + dataset sample data.
   - Migrasi skema database v2 (`chart_summary` & `question_registry`).
   - Abstraksi Swappable LLM Providers (Ollama & Groq).
 - [ ] **Sprint 2 (Core Engine & Multi-Persona)**:
@@ -225,12 +229,12 @@ Detail lengkap roadmap dapat dibaca di [docs/v2/roadmapsv2.md](file:///d:/Data%2
 
 ---
 
-## 🤝 Berkontribusi
+## Berkontribusi
 
 Ingin berkontribusi atau mengerjakan sprint bersama? Silakan baca panduan lengkap alur kerja git, konvensi kode, dan pengujian di **[CONTRIBUTING.md](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/CONTRIBUTING.md)**.
 
 ---
 
-## 📄 Lisensi & Penggunaan Data
+## Lisensi & Penggunaan Data
 
 Repository ini menggunakan data sintetis dan data publik untuk tujuan riset, pengembangan, dan demonstrasi. Tidak ada data internal atau kredensial privat yang disimpan di dalam repository ini.

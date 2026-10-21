@@ -1,10 +1,6 @@
-# 🤝 Panduan Kontribusi (Contributing Guide)
+# Panduan Kontribusi (Contributing Guide)
 
-Selamat datang di proyek **Jawa Timur Public Strategic Dashboard & AI Narrative Summary (v2)**! Dokumen ini dirancang sebagai panduan praktis bagi rekan tim dan kontributor agar dapat mulai bekerja secara kolaboratif, rapi, dan seragam tanpa kebingungan.
-
----
-
-## 🧭 Prinsip Utama Rekayasa (Engineering Principles)
+## Prinsip Utama Rekayasa (Engineering Principles)
 
 Sebelum mulai menulis kode, harap pahami 3 pilar utama arsitektur sistem ini:
 
@@ -23,7 +19,7 @@ Sebelum mulai menulis kode, harap pahami 3 pilar utama arsitektur sistem ini:
 
 ---
 
-## 🌿 Alur Kerja Git & Percabangan (Git Workflow)
+## Alur Kerja Git & Percabangan (Git Workflow)
 
 Untuk menjaga kestabilan kode, kita menggunakan alur kerja berbasis fitur (*feature-branch workflow*):
 
@@ -37,7 +33,7 @@ Untuk menjaga kestabilan kode, kita menggunakan alur kerja berbasis fitur (*feat
 
 Kontributor bebas memilih salah satu dari 2 cara di bawah ini (keduanya menghasilkan `.venv` yang 100% kompatibel):
 
-- **Opsi A: Menggunakan `uv` (Direkomendasikan - Sangat Cepat ⚡)**
+- **Opsi A: Menggunakan `uv` (Direkomendasikan)**
   ```bash
   # Otomatis membuat .venv dan menginstal seluruh dependencies:
   uv sync
@@ -88,7 +84,7 @@ Gunakan format standar berikut:
 - `docs: ...` untuk perubahan dokumentasi atau komentar
 - `refactor: ...` untuk perapian kode tanpa mengubah fungsi eksternal
 
-### 4. Membuat Pull Request (PR)
+### 5. Membuat Pull Request (PR)
 - Buka Pull Request dari branch fitur Anda ke branch `main`.
 - Berikan deskripsi ringkas mengenai:
   - Apa yang dikerjakan / diselesaikan.
@@ -98,17 +94,17 @@ Gunakan format standar berikut:
 
 ---
 
-## 🔒 Keamanan & Manajemen Environment
+## Keamanan & Manajemen Environment
 
 1. **JANGAN PERNAH COMMIT FILE `.env`**:
    - File `.env` berisi kunci API, kredensial basis data, dan token rahasia.
    - File `.env` sudah masuk ke dalam `.gitignore`. Jangan pernah menggunakan `git add -f .env`.
 2. **Perbarui `.env.example` Jika Menambah Variabel Baru**:
-   - Jika kode Anda membutuhkan variabel environment baru, tambahkan variabel tersebut ke [.env.example](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/.env.example) dengan nilai default/kosong dan beri komentar penjelas.
+   - Jika kode Anda membutuhkan variabel environment baru, tambahkan variabel tersebut ke `.env.example` dengan nilai default/kosong dan beri komentar penjelas.
 
 ---
 
-## 🧪 Panduan Menjalankan & Menulis Pengujian (Testing)
+## Panduan Menjalankan & Menulis Pengujian (Testing)
 
 Kita menggunakan framework **pytest**.
 
@@ -133,7 +129,7 @@ pytest -k "test_save"
 
 ---
 
-## 📐 Arsitektur Kode & Konvensi Python
+## Arsitektur Kode & Konvensi Python
 
 1. **Python 3.11+ Type Hinting**:
    - Selalu gunakan type hint pada argumen dan return value fungsi:
@@ -152,7 +148,7 @@ pytest -k "test_save"
 
 ---
 
-## 📋 Acuan Referensi Dokumen Proyek
+## Acuan Referensi Dokumen Proyek
 
 Jika ragu mengenai alur fitur, spesifikasi produk, atau jadwal sprint, silakan rujuk dokumen berikut:
 - **Spesifikasi Produk**: [docs/v2/PRDv2.md](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/docs/v2/PRDv2.md)
@@ -160,5 +156,3 @@ Jika ragu mengenai alur fitur, spesifikasi produk, atau jadwal sprint, silakan r
 - **Desain UI/UX & Interaksi**: [docs/v2/UIUX.md](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/docs/v2/UIUX.md)
 - **Jadwal & Target Sprint**: [docs/v2/roadmapsv2.md](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/docs/v2/roadmapsv2.md)
 - **Plan Task Spesifik**: [docs/plan/](file:///d:/Data%20Science%20Intern/Project/AIsummary-dashboard-jatim/docs/plan/)
-
-Selamat berkontribusi! Bersama kita bangun dashboard analitik publik yang cerdas, akurat, dan transparan untuk masyarakat Jawa Timur. 🚀
