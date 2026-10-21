@@ -83,24 +83,45 @@ flowchart TD
 - Docker & Docker Compose
 - Git
 
-### 2. Clone Repository & Setup Virtual Environment
+### 2. Clone Repository & Setup Environment
+
+Pilih salah satu cara setup environment di bawah ini:
+
+#### ⚡ Opsi A: Menggunakan `uv` (Direkomendasikan - Modern & Cepat)
+Jika Anda menggunakan [uv](https://docs.astral.sh/uv/):
 ```bash
 # Clone repository
 git clone https://github.com/nafisfhkr/auto-chart-summary-dashboard.git
 cd auto-chart-summary-dashboard
 
-# Buat virtual environment
+# Buat .venv & install semua dependencies dalam satu perintah:
+uv sync
+
+# (Opsional) Aktivasi venv jika ingin menjalankan perintah langsung:
+# Windows (PowerShell): .\.venv\Scripts\Activate.ps1
+# Linux / macOS:        source .venv/bin/activate
+```
+
+#### 🐍 Opsi B: Menggunakan Standar Python (`pip` bawaan)
+Jika belum menginstal `uv`, Anda tetap dapat menggunakan tools bawaan Python:
+```bash
+# Clone repository
+git clone https://github.com/nafisfhkr/auto-chart-summary-dashboard.git
+cd auto-chart-summary-dashboard
+
+# 1. Buat virtual environment
 python -m venv .venv
 
-# Aktivasi virtual environment
+# 2. Aktivasi virtual environment
 # Windows (PowerShell):
 .\.venv\Scripts\Activate.ps1
 # Linux / macOS:
 source .venv/bin/activate
 
-# Install dependencies
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
+
 
 ### 3. Konfigurasi Environment (`.env`)
 Salin file template `.env.example` menjadi `.env`:

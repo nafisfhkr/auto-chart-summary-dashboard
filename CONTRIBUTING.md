@@ -33,7 +33,31 @@ Untuk menjaga kestabilan kode, kita menggunakan alur kerja berbasis fitur (*feat
 - **`fix/<nama-perbaikan>`**: Digunakan untuk perbaikan bug spesifik (contoh: `fix/metabase-token-expiration`).
 - **`docs/<topik>`**: Digunakan untuk pembaruan dokumentasi (contoh: `docs/readme-and-contributing`).
 
-### 2. Langkah Pengerjaan Fitur Baru
+### 2. Setup Lingkungan Pengembangan (Development Environment)
+
+Kontributor bebas memilih salah satu dari 2 cara di bawah ini (keduanya menghasilkan `.venv` yang 100% kompatibel):
+
+- **Opsi A: Menggunakan `uv` (Direkomendasikan - Sangat Cepat ⚡)**
+  ```bash
+  # Otomatis membuat .venv dan menginstal seluruh dependencies:
+  uv sync
+  ```
+  *(Dengan `uv`, Anda bahkan bisa langsung menjalankan perintah tanpa aktivasi manual: `uv run pytest` atau `uv run uvicorn ...`)*
+
+- **Opsi B: Menggunakan Standar Python (`pip` bawaan)**
+  ```bash
+  # 1. Buat virtual environment
+  python -m venv .venv
+
+  # 2. Aktivasi virtual environment
+  # Windows (PowerShell): .\.venv\Scripts\Activate.ps1
+  # Linux / macOS:        source .venv/bin/activate
+
+  # 3. Instal dependencies
+  pip install -r requirements.txt
+  ```
+
+### 3. Langkah Pengerjaan Fitur Baru
 ```bash
 # 1. Pastikan branch main lokal Anda adalah versi paling mutakhir
 git checkout main
@@ -46,7 +70,7 @@ git checkout -b feature/sprint2-nama-tugas
 # ...
 
 # 4. Jalankan seluruh test suite sebelum commit
-pytest
+pytest # atau: uv run pytest
 
 # 5. Commit perubahan dengan pesan yang deskriptif
 git add .
@@ -56,7 +80,7 @@ git commit -m "feat: implement scalar insight engine for single-value kpis"
 git push -u origin feature/sprint2-nama-tugas
 ```
 
-### 3. Konvensi Pesan Commit (Conventional Commits)
+### 4. Konvensi Pesan Commit (Conventional Commits)
 Gunakan format standar berikut:
 - `feat: ...` untuk fitur baru (contoh: `feat: add groq provider`)
 - `fix: ...` untuk perbaikan bug (contoh: `fix: handle null dimension column in metabase repository`)
