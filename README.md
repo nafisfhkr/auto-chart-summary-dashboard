@@ -152,7 +152,7 @@ Pastikan Docker Engine / Docker Desktop sudah berjalan, lalu jalankan:
 docker compose up -d metabase-db metabase-local
 ```
 - **Metabase UI**: Akses melalui browser di [http://localhost:3000](http://localhost:3000)
-- **Database Sample Data**: Berjalan di `localhost:5433` (User: `metabase`, Password: `metabase`, DB: `jatim_data`)
+- **Database Sample Data**: Berjalan di `localhost:5433` (Kredensial dev lokal terkonfigurasi secara terisolasi pada `docker-compose.yml`)
 
 ### 5. Inisialisasi Skema Database v2
 Jalankan file migrasi SQL ke database PostgreSQL Anda secara berurutan:
