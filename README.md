@@ -4,6 +4,8 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688.svg)](https://fastapi.tiangolo.com/)
+[![Svelte](https://img.shields.io/badge/Frontend-Svelte-FF3E00.svg)](https://svelte.dev/)
+[![TailwindCSS](https://img.shields.io/badge/CSS-Tailwind-38B2AC.svg)](https://tailwindcss.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
 [![Metabase](https://img.shields.io/badge/Metabase-v0.50%2B-509EE3.svg)](https://www.metabase.com/)
 [![Tests](https://img.shields.io/badge/Tests-144%20Passing-brightgreen.svg)]()
@@ -43,7 +45,7 @@ flowchart TD
         FV -->|Lolos Validasi| CS[(chart_summary DB)]
         FV -->|Gagal Validasi| RJ[Status: Rejected / HITL Queue]
         CS --> API[FastAPI Backend / Embed Service]
-        API --> UI[Web Dashboard / Frontend]
+        API --> UI[Interactive Svelte Portal]
     end
 ```
 
@@ -52,6 +54,7 @@ flowchart TD
 ## Fitur Utama (v2)
 
 - **Zero Hallucination Fact-Checking**: Validasi angka berbasis aturan deterministik menjamin tidak ada fakta palsu atau angka karangan pada narasi publik.
+- **Interactive Svelte Frontend**: Portal antarmuka modern berbasis Svelte dan Tailwind CSS yang dilengkapi Persona Switcher, Interactive Evidence Highlighting (sorot bukti angka pendukung saat kursor diarahkan ke kalimat narasi), dan panel moderasi Human-in-the-Loop (HITL).
 - **Swappable LLM Providers**: Dapat dengan mudah beralih antara:
   - **Ollama** (Jalur A - Local Private LLM, e.g., Llama 3)
   - **Groq** (Jalur B1 - Ultra-Fast Cloud Inference API)
@@ -66,6 +69,8 @@ flowchart TD
 
 | Komponen | Teknologi | Keterangan |
 | :--- | :--- | :--- |
+| **Frontend Framework** | [Svelte](https://svelte.dev/) + [Vite](https://vitejs.dev/) | Portal publik interaktif, persona switcher, fact-check hover, & panel moderasi analis |
+| **UI Styling** | [Tailwind CSS](https://tailwindcss.com/) | Antarmuka modern, utility-first styling, dan layout responsif |
 | **Backend Framework** | [FastAPI](https://fastapi.tiangolo.com/) | REST API, dynamic summary retrieval, signed JWT embed |
 | **Language** | [Python 3.11+](https://www.python.org/) | Type-hinted, modular dataclasses, strategy pattern |
 | **Database** | [PostgreSQL 16](https://www.postgresql.org/) | Storage untuk narasi ringkasan, registry, dan audit log |
@@ -217,9 +222,10 @@ auto-chart-summary-dashboard/
   - Scalar/KPI Insight Engine.
   - Template prompt multi-persona (KataData, Eksekutif, Analis).
   - Payload sanitizer & penyimpanan JSONB `factual_payload`.
-- [ ] **Sprint 3 (Frontend Web App)**:
-  - Antarmuka portal publik dashboard interaktif.
+- [ ] **Sprint 3 (Frontend Web App Svelte + Tailwind)**:
+  - Antarmuka portal publik dashboard interaktif (Svelte).
   - Persona switcher & interactive evidence hover (fact-checking highlight).
+  - Halaman beranda edukatif & question connector registry UI.
 - [ ] **Sprint 4 (HITL Moderation)**:
   - Analis review workspace & workflow approval (draft → approved → published).
 - [ ] **Sprint 5 (Evaluation & Benchmark)**:
